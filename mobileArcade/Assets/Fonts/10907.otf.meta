@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: e7e284836816a8344aa0c861c6a816db
+timeCreated: 1509982690
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Lyajka(FONT BY LYAJKA)
+  fontNames:
+  - Lyajka(FONT BY LYAJKA)
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

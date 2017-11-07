@@ -13,16 +13,33 @@ public class PlayerController : MonoBehaviour
     public Collider coll;
     public bool inControl = true;
     public Animator camAnim;
-    public Collider interactiveZoneTrigger;
+    public SphereCollider interactiveZoneTrigger;
     bool walking = false;
+
+    public Animator blinkAnim;
+    float blinkCooldown = 0;
+    public Animator toDoListAnim;
+    bool toDoListActive = false;
 
     // Update is called once per frame
     void Update()
     {
-        if (inControl)
+        if (inControl && !toDoListActive)
         {
             Moving();
             Interacting();
+            Blinking();
+        }
+    }
+
+    void Blinking()
+    {
+        if (blinkCooldown > 0)
+            blinkCooldown -= Time.deltaTime;
+        else
+        {
+            blinkCooldown = Random.Range(0.1f, 7f);
+            blinkAnim.SetTrigger("Blink");
         }
     }
 
@@ -98,33 +115,71 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
         {
+            StartCoroutine("InteractTouch");
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            StartCoroutine("InteractMouse");
+        }
+    }
+    public IEnumerator InteractTouch()
+    {
+        float time = 0;
+        while (Input.GetTouch(0).phase != TouchPhase.Ended && time < 0.2f)
+        {
+            time += Time.deltaTime;
+            yield return null;
+        }
+        if (Input.GetTouch(0).phase == TouchPhase.Ended && time < 0.2f)
+        {
             Ray ray = rayCam.ScreenPointToRay(Input.GetTouch(0).position);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit) && hit.collider.gameObject.layer == 9 && hit.collider.gameObject.tag == "ActiveObject")
+            Interact(ray, false);
+        }
+    }
+    public IEnumerator InteractMouse()
+    {
+        yield return new WaitForSeconds(0.2f);
+        if (!Input.GetMouseButton(0))
+        {
+            Ray ray = rayCam.ScreenPointToRay(Input.mousePosition);
+
+            Interact(ray, false);
+        }
+    }
+    void Interact(Ray _ray, bool castUI)
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(_ray, out hit))
+        {
+            if (hit.collider.gameObject.layer == 9 && hit.collider.gameObject.tag == "ActiveObject")
             {
                 InteractiveController ic = hit.collider.gameObject.GetComponent<InteractiveController>();
                 if (ic.playerInRange)
                     ic.Interact(this);
             }
-        }
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = rayCam.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            //if (Physics.Linecast(camHolder.transform.position, Camera.main.ScreenToWorldPoint(Input.mousePosition), out hit))
-            if (Physics.Raycast(ray, out hit) && hit.collider.gameObject.layer == 9 && hit.collider.gameObject.tag == "ActiveObject")
+            else if (hit.collider.gameObject.layer == 5 && hit.collider.gameObject.name == "ToDoList")
             {
-                InteractiveController ic = hit.collider.gameObject.GetComponent<InteractiveController>();
-                if (ic.playerInRange)
-                    ic.Interact(this);
+                toDoListAnim.SetBool("Active", true);
             }
         }
     }
     public IEnumerator ResetInteractiveZoneTrigger()
     {
         interactiveZoneTrigger.enabled = false;
-        yield return new WaitForSecondsRealtime(0.5f);
+        yield return new WaitForEndOfFrame();
         interactiveZoneTrigger.enabled = true;
+    }
+    public void ToDoListActive()
+    {
+        if (inControl)
+        {
+            toDoListActive = true;
+            toDoListAnim.SetBool("Active", true);
+        }
+    }
+    public void ToDoListInactive()
+    {
+        toDoListActive = false;
+        toDoListAnim.SetBool("Active", false);
     }
 }

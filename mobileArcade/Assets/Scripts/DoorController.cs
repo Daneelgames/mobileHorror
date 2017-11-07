@@ -60,7 +60,6 @@ public class DoorController : MonoBehaviour
 
         float newElapsedTime = 0;
         float newTime = 1f;
-        player.StartCoroutine("ResetInteractiveZoneTrigger");
         while (newElapsedTime < newTime)
         {
             player.transform.position = Vector3.Lerp(player.transform.position, targetPoint.transform.position, newElapsedTime / newTime);
@@ -73,6 +72,7 @@ public class DoorController : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
         //player.transform.SetParent(null);
+        player.StartCoroutine("ResetInteractiveZoneTrigger");
         player.InControl(true);
         player.KinematicRigidbody(false);
     }
